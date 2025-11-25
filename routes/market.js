@@ -53,6 +53,7 @@ router.get("/", async (req, res) => {
   const limit = 12;
   const offset = (page - 1) * limit;
   const q = (req.query.q || "").trim();
+  const category = (req.query.category || "").trim();
 
   try {
     let where = "1=1";
@@ -61,6 +62,11 @@ router.get("/", async (req, res) => {
     if (q) {
       where += " AND (m.title LIKE ? OR m.description LIKE ?)";
       params.push(`%${q}%`, `%${q}%`);
+    }
+
+    if (category) {
+      where += " AND m.category = ?";
+      params.push(category);
     }
 
     const [items] = await db.query(
@@ -101,6 +107,7 @@ router.get("/", async (req, res) => {
       items,
       q,
       page,
+      category,
       totalPages,
       totalItems,
       limit,

@@ -46,18 +46,47 @@
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
       <h2 class="mb-0">캠퍼스 장터</h2>
       <div class="d-flex flex-wrap gap-2 align-items-center">
-        <form class="d-flex align-items-center" method="get" action="/market">
-          <input
-            type="text"
-            class="form-control form-control-sm"
-            name="q"
-            placeholder="상품명, 설명 검색"
-            value="<%= q || '' %>"
-          />
-          <button class="btn btn-primary btn-sm ms-2" type="submit">
-            검색
-          </button>
-        </form>
+        <form class="d-flex align-items-center gap-2" method="get" action="/market">
+      <select
+        name="category"
+        class="form-select form-select-sm"
+        style="max-width: 180px;"
+      >
+        <option value="">전체</option>
+        <option value="디지털기기" <%= category === "디지털기기" ? "selected" : "" %>>디지털기기</option>
+        <option value="가구/인테리어" <%= category === "가구/인테리어" ? "selected" : "" %>>가구/인테리어</option>
+        <option value="유아동" <%= category === "유아동" ? "selected" : "" %>>유아동</option>
+        <option value="여성의류" <%= category === "여성의류" ? "selected" : "" %>>여성의류</option>
+        <option value="여성잡화" <%= category === "여성잡화" ? "selected" : "" %>>여성잡화</option>
+        <option value="남성패션/잡화" <%= category === "남성패션/잡화" ? "selected" : "" %>>남성패션/잡화</option>
+        <option value="생활가전" <%= category === "생활가전" ? "selected" : "" %>>생활가전</option>
+        <option value="생활/주방" <%= category === "생활/주방" ? "selected" : "" %>>생활/주방</option>
+        <option value="스포츠/레저" <%= category === "스포츠/레저" ? "selected" : "" %>>스포츠/레저</option>
+        <option value="취미/게임/음반" <%= category === "취미/게임/음반" ? "selected" : "" %>>취미/게임/음반</option>
+        <option value="뷰티/미용" <%= category === "뷰티/미용" ? "selected" : "" %>>뷰티/미용</option>
+        <option value="식물" <%= category === "식물" ? "selected" : "" %>>식물</option>
+        <option value="가공식품" <%= category === "가공식품" ? "selected" : "" %>>가공식품</option>
+        <option value="건강기능식품" <%= category === "건강기능식품" ? "selected" : "" %>>건강기능식품</option>
+        <option value="반려동물용품" <%= category === "반려동물용품" ? "selected" : "" %>>반려동물용품</option>
+        <option value="티켓/교환권" <%= category === "티켓/교환권" ? "selected" : "" %>>티켓/교환권</option>
+        <option value="도서" <%= category === "도서" ? "selected" : "" %>>도서</option>
+        <option value="유아도서" <%= category === "유아도서" ? "selected" : "" %>>유아도서</option>
+        <option value="기타 중고물품" <%= category === "기타 중고물품" ? "selected" : "" %>>기타 중고물품</option>
+      </select>
+
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        name="q"
+        placeholder="상품명, 설명 검색"
+        value="<%= q || '' %>"
+        style="min-width: 160px;"
+      />
+      <button class="btn btn-primary btn-sm" type="submit">
+        검색
+      </button>
+    </form>
+
         <% if (currentUser) { %>
           <a href="/market/new" class="btn btn-primary btn-sm">
             상품 올리기
