@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WISE market - 회원가입</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-top">
+        <a href="/" class="logo">WISE market</a>
+        <div class="header-right">
+          <% if (currentUser) { %>
+            <span class="welcome"><%= currentUser.nickname %> 님</span>
+            <form action="/auth/logout" method="post" class="logout-form">
+              <button type="submit" class="link-button">로그아웃</button>
+            </form>
+          <% } else { %>
+            <a href="/auth/login" class="auth-link">로그인</a>
+            <span class="divider">|</span>
+            <a href="/auth/signup" class="auth-link">회원가입</a>
+          <% } %>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <nav class="nav-main">
+          <a href="/market">캠퍼스 장터</a>
+          <a href="/community/1">WISIAN 게시판</a>
+          <% if (currentUser) { %>
+            <a href="/chat">내 채팅</a>
+            <a href="/mypage">마이페이지</a>
+          <% } %>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container auth-page">
+    <div class="auth-card">
+      <h2 class="mb-4">회원가입</h2>
+
+      <% if (typeof error !== "undefined" && error) { %>
+        <p style="color:red;"><%= error %></p>
+      <% } %>
+
+      <% if (typeof message !== "undefined" && message) { %>
+        <p><%= message %></p>
+      <% } %>
+
+      <form action="/auth/signup" method="post">
+        <!-- 이메일 -->
+        <div class="mb-1">
+          <label class="form-label" for="email">이메일</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <!-- 이메일 중복 확인 버튼 + 결과 -->
+        <div class="mb-3 d-flex align-items-center gap-2">
+          <button
+            type="button"
+            id="btnCheckEmail"
+            class="btn btn-sm btn-primary btn-action"
+          >
+            이메일 중복 확인
+          </button>
+          <small id="emailCheckResult" class="form-text"></small>
+        </div>
+
+        <!-- 비밀번호 -->
+        <div class="mb-3">
+          <label class="form-label" for="password">비밀번호</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <!-- 비밀번호 확인 -->
+        <div class="mb-3">
+          <label class="form-label" for="passwordConfirm">비밀번호 확인</label>
+          <input
+            type="password"
+            id="passwordConfirm"
+            name="passwordConfirm"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <!-- 닉네임 -->
+        <div class="mb-4">
+          <label class="form-label" for="nickname">닉네임</label>
+          <input
+            type="text"
+            id="nickname"
+            name="nickname"
+            class="form-control"
+            required
+          />
+        </div>
+
+        <!-- 학번 / 학과는 요청대로 제거 -->
+
+        <button type="submit" class="btn btn-primary w-100 mb-2">
+          회원가입 완료
+        </button>
+
+        <a href="/auth/login" class="btn btn-primary w-100">
+          로그인 하러 가기
+        </a>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const btnCheckEmail = document.getElementById("btnCheckEmail");
+    const emailInput = document.getElementById("email");
+    const emailResult = document.getElementById("emailCheckResult");
+
+    if (btnCheckEmail) {
+      btnCheckEmail.addEventListener("click", async () => {
+        const email = emailInput.value.trim();
+        if (!email) {
+          emailResult.textContent = "이메일을 먼저 입력해 주세요.";
+          emailResult.style.color = "red";
+          return;
+        }
+
+        try {
+          const res = await fetch(
+            "/auth/check-email?email=" + encodeURIComponent(email)
+          );
+          const data = await res.json();
+          emailResult.textContent = data.message;
+          emailResult.style.color = data.ok ? "green" : "red";
+        } catch (e) {
+          emailResult.textContent = "중복 확인 중 오류가 발생했습니다.";
+          emailResult.style.color = "red";
+        }
+      });
+    }
+  </script>
+</body>
+</html>

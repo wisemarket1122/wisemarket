@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WISE market - <%= title %></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-top">
+        <a href="/" class="logo">WISE market</a>
+        <div class="header-right">
+          <% if (currentUser) { %>
+            <span class="welcome"><%= currentUser.nickname %> 님</span>
+            <form action="/auth/logout" method="post" class="logout-form">
+              <button type="submit" class="link-button">로그아웃</button>
+            </form>
+          <% } else { %>
+            <a href="/auth/login" class="auth-link">로그인</a>
+            <span class="divider">|</span>
+            <a href="/auth/signup" class="auth-link">회원가입</a>
+          <% } %>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <nav class="nav-main">
+          <a href="/market">캠퍼스 장터</a>
+          <a href="/community/1">WISIAN 게시판</a>
+          <% if (currentUser) { %>
+            <a href="/chat">내 채팅</a>
+            <a href="/mypage">마이페이지</a>
+          <% } %>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mt-3">
+    <!-- 제목 + 글쓰기 -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+      <h2 class="mb-0"><%= board.name %></h2>
+      <% if (currentUser) { %>
+        <a
+          href="/community/<%= board.board_id %>/new"
+          class="btn btn-primary btn-action"
+        >
+          글쓰기
+        </a>
+      <% } %>
+    </div>
+
+    <!-- 검색 -->
+    <form
+      action="/community/<%= board.board_id %>"
+      method="get"
+      class="row g-2 mb-3"
+      style="max-width: 480px;"
+    >
+      <div class="col-8">
+        <input
+          type="text"
+          name="q"
+          class="form-control"
+          placeholder="제목/내용 검색"
+          value="<%= q || '' %>"
+        />
+      </div>
+      <div class="col-4">
+        <button type="submit" class="btn btn-primary btn-action w-100">
+          검색
+        </button>
+      </div>
+    </form>
+
+    <!-- 게시글 목록 테이블 -->
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 60px;">#</th>
+            <th>제목</th>
+            <th style="width: 180px;">작성자</th>
+            <th style="width: 200px;">작성일</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (!posts || posts.length === 0) { %>
+            <tr>
+              <td colspan="4" class="text-center text-muted">
+                아직 등록된 글이 없습니다.
+              </td>
+            </tr>
+          <% } else { %>
+            <% posts.forEach(function(post, index) { %>
+              <tr>
+                <!-- 페이지별 순번: 1, 2, 3 ... -->
+                <td><%= (page - 1) * limit + index + 1 %></td>
+                <td>
+                  <a
+                    href="/community/<%= board.board_id %>/<%= post.post_id %>"
+                    class="board-link"
+                  >
+                    <strong class="board-title"><%= post.title %></strong><br />
+                    <span class="board-meta">
+                      <span class="board-writer">
+                        <%= post.author_nickname %>
+                      </span>
+                    </span>
+                  </a>
+                </td>
+                <td>
+                  <span class="board-writer text-warning">
+                    <%= post.author_nickname %>
+                  </span>
+                </td>
+                <td>
+                  <span class="board-date text-warning">
+                    <%= new Date(post.created_at).toLocaleString("ko-KR", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }) %>
+                  </span>
+                </td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 페이징 -->
+    <% if (totalPages && totalPages > 1) { %>
+      <nav aria-label="페이지 이동" class="mt-4">
+        <ul class="pagination justify-content-center">
+          <% for (let p = 1; p <= totalPages; p++) { %>
+            <li class="page-item <%= p === page ? 'active' : '' %>">
+              <a
+                class="page-link"
+                href="/community/<%= board.board_id %>?page=<%= p %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"
+              >
+                <%= p %>
+              </a>
+            </li>
+          <% } %>
+        </ul>
+      </nav>
+    <% } %>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

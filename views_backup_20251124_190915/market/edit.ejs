@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WISE market - 판매 글 수정</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-top">
+        <a href="/" class="logo">WISE market</a>
+        <div class="header-right">
+          <% if (currentUser) { %>
+            <span class="welcome"><%= currentUser.nickname %> 님</span>
+            <form action="/auth/logout" method="post" class="logout-form">
+              <button type="submit" class="link-button">로그아웃</button>
+            </form>
+          <% } else { %>
+            <a href="/auth/login" class="auth-link">로그인</a>
+            <span class="divider">|</span>
+            <a href="/auth/signup" class="auth-link">회원가입</a>
+          <% } %>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <nav class="nav-main">
+          <a href="/market">캠퍼스 장터</a>
+          <a href="/community/1">WISIAN 게시판</a>
+          <% if (currentUser) { %>
+            <a href="/chat">내 채팅</a>
+            <a href="/mypage">마이페이지</a>
+          <% } %>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="list-top-right">
+      <span
+        class="d-inline-block"
+        tabindex="0"
+        data-bs-toggle="popover"
+        data-bs-trigger="hover focus"
+        data-bs-content="장터 목록으로 이동"
+      >
+        <a href="/market" class="btn btn-primary btn-action">목록으로</a>
+      </span>
+    </div>
+
+    <h2>판매 글 수정</h2>
+
+    <% if (error) { %>
+      <p style="color:red;"><%= error %></p>
+    <% } %>
+
+    <form
+      action="/market/<%= item.item_id %>/edit"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <div class="form-group">
+        <label class="form-label" for="title">제목</label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          value="<%= item.title %>"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">설명</label>
+        <textarea
+          id="description"
+          name="description"
+          rows="5"
+          class="form-control"
+          required
+        ><%= item.description %></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="price">가격</label>
+        <input
+          type="number"
+          id="price"
+          name="price"
+          min="0"
+          value="<%= item.price %>"
+          class="form-control"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="category">카테고리</label>
+        <select id="category" name="category" class="form-control" required>
+          <option value="">카테고리를 선택하세요</option>
+          <option value="디지털기기" <%= item.category === "디지털기기" ? "selected" : "" %>>디지털기기</option>
+          <option value="가구/인테리어" <%= item.category === "가구/인테리어" ? "selected" : "" %>>가구/인테리어</option>
+          <option value="유아동" <%= item.category === "유아동" ? "selected" : "" %>>유아동</option>
+          <option value="여성의류" <%= item.category === "여성의류" ? "selected" : "" %>>여성의류</option>
+          <option value="여성잡화" <%= item.category === "여성잡화" ? "selected" : "" %>>여성잡화</option>
+          <option value="남성패션/잡화" <%= item.category === "남성패션/잡화" ? "selected" : "" %>>남성패션/잡화</option>
+          <option value="생활가전" <%= item.category === "생활가전" ? "selected" : "" %>>생활가전</option>
+          <option value="생활/주방" <%= item.category === "생활/주방" ? "selected" : "" %>>생활/주방</option>
+          <option value="스포츠/레저" <%= item.category === "스포츠/레저" ? "selected" : "" %>>스포츠/레저</option>
+          <option value="취미/게임/음반" <%= item.category === "취미/게임/음반" ? "selected" : "" %>>취미/게임/음반</option>
+          <option value="뷰티/미용" <%= item.category === "뷰티/미용" ? "selected" : "" %>>뷰티/미용</option>
+          <option value="식물" <%= item.category === "식물" ? "selected" : "" %>>식물</option>
+          <option value="가공식품" <%= item.category === "가공식품" ? "selected" : "" %>>가공식품</option>
+          <option value="건강기능식품" <%= item.category === "건강기능식품" ? "selected" : "" %>>건강기능식품</option>
+          <option value="반려동물용품" <%= item.category === "반려동물용품" ? "selected" : "" %>>반려동물용품</option>
+          <option value="티켓/교환권" <%= item.category === "티켓/교환권" ? "selected" : "" %>>티켓/교환권</option>
+          <option value="도서" <%= item.category === "도서" ? "selected" : "" %>>도서</option>
+          <option value="유아도서" <%= item.category === "유아도서" ? "selected" : "" %>>유아도서</option>
+          <option value="기타 중고물품" <%= item.category === "기타 중고물품" ? "selected" : "" %>>기타 중고물품</option>
+        </select>
+      </div>
+
+      <% if (item.image_path) { %>
+        <div class="form-group">
+          <p>현재 등록된 이미지:</p>
+          <img
+            src="<%= item.image_path %>"
+            alt="<%= item.title %>"
+            style="width:150px; height:150px; object-fit:cover;"
+          />
+        </div>
+      <% } %>
+
+      <div class="form-group">
+        <label class="form-label" for="image">상품 사진 변경 (선택)</label>
+        <input type="file" id="image" name="image" accept="image/*" class="form-control" />
+      </div>
+
+      <span
+        class="d-inline-block"
+        tabindex="0"
+        data-bs-toggle="popover"
+        data-bs-trigger="hover focus"
+        data-bs-content="판매 글을 수정합니다"
+      >
+        <button type="submit" class="btn btn-primary btn-action">
+          수정 완료
+        </button>
+      </span>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(el => {
+      new bootstrap.Popover(el);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>WISE market - 마이페이지</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="header-top">
+        <a href="/" class="logo">WISE market</a>
+        <div class="header-right">
+          <% if (currentUser) { %>
+            <span class="welcome"><%= currentUser.nickname %> 님</span>
+            <form action="/auth/logout" method="post" class="logout-form">
+              <button type="submit" class="link-button">로그아웃</button>
+            </form>
+          <% } else { %>
+            <a href="/auth/login" class="auth-link">로그인</a>
+            <span class="divider">|</span>
+            <a href="/auth/signup" class="auth-link">회원가입</a>
+          <% } %>
+        </div>
+      </div>
+      <div class="header-bottom">
+        <nav class="nav-main">
+
+
+          <% if (currentUser) { %>
+
+          <% } %>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h2>마이페이지</h2>
+
+    <% if (userInfo) { %>
+      <h3>내 정보</h3>
+      <ul class="list-unstyled">
+        <li>이메일: <%= userInfo.email %></li>
+        <li>닉네임: <%= userInfo.nickname %></li>
+	<li class="mt-2">
+          <a href="/mypage/edit" class="btn btn-primary btn-action">
+            내 정보 수정
+         </a>
+        </li>
+      </ul>
+    <% } %>
+
+    <hr />
+
+    <h3>내 판매 글</h3>
+    <% if (!marketItems || marketItems.length === 0) { %>
+      <p>등록한 판매 글이 없습니다.</p>
+    <% } else { %>
+      <ul class="list-card">
+        <% marketItems.forEach(function(item) { %>
+          <li>
+            <a href="/market/<%= item.item_id %>">
+              [<%= item.category || "기타" %>] <%= item.title %> - <%= item.price %>원
+            </a>
+            <span>
+              (
+              <% if (item.status === "ON_SALE") { %>
+                판매중
+              <% } else if (item.status === "RESERVED") { %>
+                예약중
+              <% } else if (item.status === "SOLD") { %>
+                판매완료
+              <% } else { %>
+                <%= item.status %>
+              <% } %>
+              )
+            </span>
+            <span>
+              | 등록일:
+              <%= new Date(item.created_at).toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              }) %>
+            </span>
+            <span>
+              | <a href="/market/<%= item.item_id %>/edit">수정</a>
+            </span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+
+    <hr />
+
+    <h3>내 커뮤니티 글</h3>
+    <% if (!posts || posts.length === 0) { %>
+      <p>작성한 게시글이 없습니다.</p>
+    <% } else { %>
+      <ul class="list-card">
+        <% posts.forEach(function(post) { %>
+          <li>
+            [<%= post.board_name %>]
+            <a href="/community/<%= post.board_id %>/<%= post.post_id %>">
+              <%= post.title %>
+            </a>
+            <span>
+              (작성일:
+              <%= new Date(post.created_at).toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit"
+              }) %>
+              )
+            </span>
+          </li>
+        <% }); %>
+      </ul>
+    <% } %>
+
+    <hr />
+
+    <h3>회원탈퇴</h3>
+    <p style="font-size:13px; color:#555;">
+      회원탈퇴를 진행하면 등록한 판매 글, 커뮤니티 글과 댓글, 채팅방 및 메시지, 계정 정보가 모두 삭제되며
+      삭제된 데이터는 복구할 수 없습니다.
+    </p>
+
+    <form
+      action="/mypage/delete-account"
+      method="post"
+      onsubmit="return confirm('정말로 회원탈퇴를 진행하시겠습니까?\n탈퇴 후에는 모든 데이터가 삭제되며 복구할 수 없습니다.');"
+    >
+      <span
+        class="d-inline-block"
+        tabindex="0"
+        data-bs-toggle="popover"
+        data-bs-trigger="hover focus"
+        data-bs-content="계정을 삭제하고 서비스를 탈퇴합니다"
+      >
+        <button type="submit" class="btn btn-primary btn-action">
+          회원탈퇴
+        </button>
+      </span>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
+    popoverTriggerList.forEach(el => {
+      new bootstrap.Popover(el);
+    });
+  </script>
+  <%- include("../partials/bottom-nav") %>
+</body>
+</html>
