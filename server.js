@@ -2,6 +2,8 @@ import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import session from "express-session";
+import http from "http";
+import { Server } from "socket.io";
 import db from "./config/db.js";
 
 import authRouter from "./routes/auth.js";
@@ -14,8 +16,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 const HOST = "0.0.0.0";
+
+const io = new Server(server);
 
 // 뷰 엔진 설정
 app.set("view engine", "ejs");
@@ -49,6 +54,69 @@ app.use("/market", marketRouter);
 app.use("/community", communityRouter);
 app.use("/chat", chatRouter);
 app.use("/mypage", mypageRouter);
+
+io.on("connection", (socket) => {
+  console.log("🔌 소켓 연결됨:", socket.id);
+
+  // 방 입장
+  socket.on("joinRoom", ({ roomId, userId, nickname }) => {
+    console.log("📥 joinRoom 이벤트 도착:", { roomId, userId, nickname });
+
+    if (!roomId) return;
+
+    socket.join(String(roomId));
+    socket.data.userId = userId;
+    socket.data.nickname = nickname;
+
+    console.log(`✅ 사용자 ${nickname}가 방 ${roomId} 입장`);
+  });
+
+  // 메시지 전송
+  socket.on("chatMessage", async ({ roomId, message }) => {
+    console.log("📥 chatMessage 이벤트 도착:", { roomId, message });
+
+    try {
+      if (!roomId || !message) {
+        console.log("⚠️ roomId 또는 message 없음, 무시");
+        return;
+      }
+
+      const userId = socket.data.userId;
+      const nickname = socket.data.nickname;
+      console.log("socket.data:", socket.data);
+
+      if (!userId) {
+        console.log("⚠️ userId 없음, 저장/전송 안 함");
+        return;
+      }
+
+      // DB 저장
+      await db.query(
+        "INSERT INTO chat_messages (room_id, sender_id, content) VALUES (?, ?, ?)",
+        [roomId, userId, message]
+      );
+      console.log("💾 DB에 chat_messages 삽입 완료");
+
+      // 같은 방 사람들한테 뿌리기
+      io.to(String(roomId)).emit("chatMessage", {
+        roomId,
+        message,
+        userId,
+        nickname,
+        created_at: new Date().toISOString(),
+      });
+      console.log("📤 방으로 chatMessage 브로드캐스트 완료:", roomId);
+    } catch (err) {
+      console.error("❌ 실시간 메시지 저장/전송 오류:", err);
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔌 소켓 연결 종료:", socket.id);
+  });
+});
+
+
 
 // 홈 라우트
 app.get("/", async (req, res) => {
@@ -101,7 +169,7 @@ process.on("unhandledRejection", (reason) => {
 });
 
 // 서버 실행
-app.listen(PORT, HOST, () => {
+server.listen(PORT, HOST, () => {
   console.log(`서버 실행: http://localhost:${PORT}`);
   console.log(`같은 와이파이에서 접속: http://10.9.3.92:${PORT}`);
 });
