@@ -243,39 +243,35 @@ router.post("/signup", async (req, res) => {
  * - ?token=... 으로 들어온 토큰 확인
  */
 router.get("/verify", async (req, res) => {
-  const token = (req.query.token || "").trim();
-
-  if (!token) {
-    return res.status(400).send("잘못된 접근입니다.");
-  }
+  const { token } = req.query;
 
   try {
+    // 토큰으로 유저 찾기
     const [rows] = await db.query(
-      "SELECT * FROM users WHERE verify_token = ?",
+      "SELECT id FROM users WHERE verify_token = ?",
       [token]
     );
 
     if (rows.length === 0) {
-      return res.status(400).send("유효하지 않은 인증 요청입니다.");
+      console.log("[EMAIL VERIFY] invalid or expired token:", token);
+      return res.status(400).send("유효하지 않은 인증 링크입니다.");
     }
 
-    const user = rows[0];
+    const userId = rows[0].id;
 
+    // is_verified = true로 업데이트 + 토큰 제거
     await db.query(
-      "UPDATE users SET is_verified = 1, verify_token = NULL WHERE user_id = ?",
-      [user.user_id]
+      "UPDATE users SET is_verified = 1, verify_token = NULL WHERE id = ?",
+      [userId]
     );
 
-    // 이메일 인증 완료 후 로그인 페이지에서 안내 문구 띄우기
-    return res.render("auth/login", {
-      title: "로그인",
-      error: null,
-      message: "이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.",
-      currentUser: null,
-    });
+    console.log("[EMAIL VERIFY] success user_id =", userId);
+
+    // 여기서 사용자가 볼 화면
+    return res.send("이메일 인증이 완료되었습니다. 이제 로그인하실 수 있습니다.");
   } catch (err) {
-    console.error("이메일 인증 처리 오류:", err);
-    res.status(500).send("이메일 인증 처리 중 오류가 발생했습니다.");
+    console.error("이메일 인증 처리 중 오류:", err);
+    return res.status(500).send("이메일 인증 처리 중 오류가 발생했습니다.");
   }
 });
 
